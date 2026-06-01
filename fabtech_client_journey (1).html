@@ -1,0 +1,311 @@
+
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  #app { font-family: var(--font-sans); padding: 1.5rem 1rem; max-width: 680px; }
+  .header { text-align: center; margin-bottom: 2rem; }
+  .header h1 { font-size: 20px; font-weight: 500; color: var(--color-text-primary); }
+  .header p { font-size: 13px; color: var(--color-text-secondary); margin-top: 4px; }
+  .steps-track { display: flex; align-items: flex-start; gap: 0; margin-bottom: 2rem; overflow-x: auto; padding-bottom: 4px; }
+  .step-dot-wrap { display: flex; flex-direction: column; align-items: center; flex: 1; min-width: 72px; cursor: pointer; }
+  .step-dot { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 500; border: 1.5px solid var(--color-border-secondary); background: var(--color-background-primary); color: var(--color-text-secondary); transition: all .2s; position: relative; z-index: 1; }
+  .step-dot.active { background: #185FA5; border-color: #185FA5; color: #fff; }
+  .step-dot.done { background: #0F6E56; border-color: #0F6E56; color: #fff; }
+  .step-label { font-size: 10px; color: var(--color-text-secondary); text-align: center; margin-top: 5px; line-height: 1.3; max-width: 68px; }
+  .step-label.active { color: #185FA5; font-weight: 500; }
+  .connector { flex: 1; height: 1.5px; background: var(--color-border-tertiary); margin-top: 17px; min-width: 12px; }
+  .connector.done { background: #0F6E56; }
+  .card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1.25rem; margin-bottom: 1rem; }
+  .card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .step-badge { width: 28px; height: 28px; border-radius: 50%; background: #E6F1FB; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 500; color: #185FA5; flex-shrink: 0; }
+  .card h2 { font-size: 16px; font-weight: 500; color: var(--color-text-primary); }
+  .card p { font-size: 13px; color: var(--color-text-secondary); line-height: 1.6; margin-bottom: 10px; }
+  .deliverables { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .tag { font-size: 11px; background: var(--color-background-secondary); color: var(--color-text-secondary); border: 0.5px solid var(--color-border-tertiary); border-radius: 20px; padding: 3px 10px; }
+  .timeline-row { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 12px; color: var(--color-text-secondary); }
+  .timeline-row i { font-size: 14px; }
+  .nav-row { display: flex; gap: 10px; margin-bottom: 1rem; }
+  .nav-row button { flex: 1; padding: 8px; font-size: 13px; border-radius: var(--border-radius-md); border: 0.5px solid var(--color-border-secondary); background: var(--color-background-primary); color: var(--color-text-primary); cursor: pointer; }
+  .nav-row button.primary { background: #185FA5; border-color: #185FA5; color: #fff; }
+  .nav-row button:disabled { opacity: 0.35; cursor: default; }
+  .chat-section { background: var(--color-background-secondary); border-radius: var(--border-radius-lg); padding: 1rem; }
+  .chat-label { font-size: 11px; color: var(--color-text-secondary); margin-bottom: 8px; display: flex; align-items: center; gap: 5px; }
+  .chat-label span { background: #E6F1FB; color: #185FA5; font-size: 10px; border-radius: 10px; padding: 2px 7px; font-weight: 500; }
+  .messages { min-height: 60px; max-height: 220px; overflow-y: auto; margin-bottom: 10px; display: flex; flex-direction: column; gap: 8px; }
+  .msg { font-size: 13px; line-height: 1.5; padding: 8px 12px; border-radius: 10px; max-width: 90%; }
+  .msg.user { background: #185FA5; color: #fff; align-self: flex-end; border-bottom-right-radius: 3px; }
+  .msg.ai { background: var(--color-background-primary); color: var(--color-text-primary); border: 0.5px solid var(--color-border-tertiary); align-self: flex-start; border-bottom-left-radius: 3px; }
+  .msg.typing { color: var(--color-text-secondary); font-style: italic; }
+  .quick-btns { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+  .quick-btn { font-size: 11px; border: 0.5px solid var(--color-border-secondary); border-radius: 20px; padding: 4px 10px; background: var(--color-background-primary); color: var(--color-text-secondary); cursor: pointer; }
+  .quick-btn:hover { background: var(--color-background-secondary); }
+  .chat-input-row { display: flex; gap: 6px; }
+  .chat-input-row input { flex: 1; font-size: 13px; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); background: var(--color-background-primary); color: var(--color-text-primary); padding: 7px 10px; outline: none; }
+  .chat-input-row button { padding: 7px 14px; font-size: 13px; border-radius: var(--border-radius-md); border: none; background: #185FA5; color: #fff; cursor: pointer; }
+  .lead-form { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+  .lead-form input { font-size: 13px; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); background: var(--color-background-primary); color: var(--color-text-primary); padding: 8px 10px; outline: none; }
+  .lead-form button { padding: 9px; font-size: 13px; font-weight: 500; border-radius: var(--border-radius-md); border: none; background: #0F6E56; color: #fff; cursor: pointer; }
+  .success-msg { text-align: center; padding: 1.5rem; color: #0F6E56; font-size: 14px; }
+</style>
+
+<div id="app">
+  <h2 class="sr-only">Fabtech Technologies — Pharma Plant Setup Process Guide with AI Assistant</h2>
+  <div class="header">
+    <h1><i class="ti ti-building-factory-2" aria-hidden="true" style="font-size:20px;vertical-align:-2px;margin-right:6px;color:#185FA5"></i>Fabtech project journey</h1>
+    <p>Your end-to-end pharma plant & cleanroom setup — from first call to handover</p>
+  </div>
+
+  <div class="steps-track" id="steps-track"></div>
+
+  <div id="step-card"></div>
+
+  <div class="nav-row">
+    <button id="prev-btn" onclick="changeStep(-1)" disabled><i class="ti ti-arrow-left"></i> Previous</button>
+    <button id="next-btn" class="primary" onclick="changeStep(1)">Next <i class="ti ti-arrow-right"></i></button>
+  </div>
+
+  <div class="chat-section">
+    <div class="chat-label"><i class="ti ti-robot" style="font-size:14px"></i> Ask Fabtech AI <span>Powered by Claude</span></div>
+    <div class="messages" id="messages"></div>
+    <div class="quick-btns" id="quick-btns"></div>
+    <div class="chat-input-row">
+      <input id="chat-input" placeholder="Ask anything about this step…" onkeydown="if(event.key==='Enter')sendMsg()">
+      <button onclick="sendMsg()"><i class="ti ti-send" style="font-size:14px"></i></button>
+    </div>
+  </div>
+</div>
+
+<script>
+const steps = [
+  {
+    title: "Initial consultation",
+    label: "Consultation",
+    icon: "ti-phone-call",
+    color: "#185FA5",
+    duration: "Week 1–2",
+    desc: "We begin by understanding your business goals, regulatory requirements (WHO-GMP, EU-GMP, US-FDA), product type, and scale of operations. Our experts conduct a needs assessment call or site visit.",
+    deliverables: ["Needs assessment report", "Regulatory checklist", "Scope of work draft", "Budget ballpark"],
+    questions: ["What pharma products will you manufacture?", "Which GMP standards apply to your market?", "What's your production capacity target?"]
+  },
+  {
+    title: "Site assessment & feasibility",
+    label: "Site Survey",
+    icon: "ti-map-pin",
+    color: "#185FA5",
+    duration: "Week 2–4",
+    desc: "Our engineering team visits your site (or reviews drawings) to assess civil structure, utilities availability (power, water, compressed air), and environmental conditions. A feasibility report is prepared.",
+    deliverables: ["Site survey report", "Utility requirement list", "Feasibility assessment", "Risk register"],
+    questions: ["How does Fabtech assess an existing building?", "What utilities are needed for a cleanroom?", "Can Fabtech work on greenfield sites?"]
+  },
+  {
+    title: "Design & engineering",
+    label: "Design",
+    icon: "ti-ruler-2",
+    color: "#185FA5",
+    duration: "Week 4–10",
+    desc: "Our in-house design team creates detailed layout drawings, HVAC schematics, air flow studies (CFD), process flow diagrams, and equipment specifications. All designs are aligned with your regulatory needs.",
+    deliverables: ["Architectural floor plans", "HVAC & cleanroom design", "CFD airflow analysis", "P&ID diagrams", "Equipment list"],
+    questions: ["What is CFD analysis and why does it matter?", "How does Fabtech ensure GMP-compliant design?", "Can we customize the cleanroom layout?"]
+  },
+  {
+    title: "Equipment manufacturing",
+    label: "Manufacturing",
+    icon: "ti-tools",
+    color: "#185FA5",
+    duration: "Week 8–20",
+    desc: "Fabtech manufactures prefabricated cleanroom panels, HVAC units, air handling units (AHUs), water treatment systems, and process equipment at our own factories near Mumbai — ensuring quality control at every stage.",
+    deliverables: ["Prefabricated panels", "AHU systems", "WFI/purified water systems", "Process equipment", "FAT certificates"],
+    questions: ["What does Fabtech manufacture in-house?", "What is a Factory Acceptance Test (FAT)?", "How are panels shipped internationally?"]
+  },
+  {
+    title: "Construction & installation",
+    label: "Installation",
+    icon: "ti-crane",
+    color: "#185FA5",
+    duration: "Week 16–36",
+    desc: "Our project management team oversees complete civil work, cleanroom panel installation, HVAC installation, electrical & utilities work, and equipment placement — all executed by trained Fabtech engineers on-site.",
+    deliverables: ["Cleanroom constructed", "HVAC commissioned", "Utilities connected", "Equipment installed", "As-built drawings"],
+    questions: ["How long does cleanroom construction take?", "Does Fabtech manage the entire site?", "What is the installation process for panels?"]
+  },
+  {
+    title: "Qualification & validation",
+    label: "Qualification",
+    icon: "ti-certificate",
+    color: "#185FA5",
+    duration: "Week 34–44",
+    desc: "We conduct IQ (Installation Qualification), OQ (Operational Qualification), and PQ (Performance Qualification) for all systems. Air particle counts, pressure differentials, temperature mapping, and microbial monitoring are performed.",
+    deliverables: ["IQ/OQ/PQ protocols", "Validation reports", "Environmental monitoring data", "HEPA filter certification", "Cleanroom classification certificate"],
+    questions: ["What is IQ OQ PQ in pharma?", "How are cleanrooms classified (ISO 5 6 7 8)?", "What validation documents does Fabtech provide?"]
+  },
+  {
+    title: "Training & handover",
+    label: "Handover",
+    icon: "ti-hand-move",
+    color: "#0F6E56",
+    duration: "Week 44–48",
+    desc: "Fabtech trains your team on operations, maintenance, SOPs, and regulatory documentation. We hand over all drawings, validation packages, and O&M manuals. Post-handover support and AMC options are available.",
+    deliverables: ["Operator training", "SOP documentation", "Validation dossier", "O&M manuals", "AMC agreement"],
+    questions: ["What training does Fabtech provide?", "What is included in the validation dossier?", "What post-handover support is available?"]
+  },
+  {
+    title: "Get in touch",
+    label: "Contact",
+    icon: "ti-send",
+    color: "#0F6E56",
+    duration: "",
+    desc: "Ready to start your pharma plant project? Share your details and a Fabtech expert will reach out within 24 hours.",
+    deliverables: [],
+    questions: []
+  }
+];
+
+let current = 0;
+let chatHistory = [];
+
+function renderTrack() {
+  const t = document.getElementById('steps-track');
+  t.innerHTML = '';
+  steps.forEach((s, i) => {
+    if (i > 0) {
+      const c = document.createElement('div');
+      c.className = 'connector' + (i <= current ? ' done' : '');
+      t.appendChild(c);
+    }
+    const wrap = document.createElement('div');
+    wrap.className = 'step-dot-wrap';
+    wrap.onclick = () => { current = i; render(); };
+    const dot = document.createElement('div');
+    dot.className = 'step-dot' + (i === current ? ' active' : i < current ? ' done' : '');
+    dot.innerHTML = i < current ? '<i class="ti ti-check" style="font-size:14px"></i>' : (i + 1);
+    const lbl = document.createElement('div');
+    lbl.className = 'step-label' + (i === current ? ' active' : '');
+    lbl.textContent = s.label;
+    wrap.appendChild(dot);
+    wrap.appendChild(lbl);
+    t.appendChild(wrap);
+  });
+}
+
+function renderCard() {
+  const s = steps[current];
+  const el = document.getElementById('step-card');
+  if (current === steps.length - 1) {
+    el.innerHTML = `<div class="card">
+      <div class="card-header">
+        <div class="step-badge" style="background:#E1F5EE;color:#0F6E56"><i class="ti ${s.icon}" style="font-size:14px"></i></div>
+        <h2>${s.title}</h2>
+      </div>
+      <p>${s.desc}</p>
+      <div class="lead-form" id="lead-form">
+        <input id="lname" placeholder="Your name" />
+        <input id="lcompany" placeholder="Company name" />
+        <input id="lemail" placeholder="Email address" />
+        <input id="lphone" placeholder="Phone / WhatsApp" />
+        <button onclick="submitLead()"><i class="ti ti-send" style="font-size:13px;vertical-align:-1px;margin-right:5px"></i>Request a consultation</button>
+      </div>
+    </div>`;
+    return;
+  }
+  const tags = s.deliverables.map(d => `<span class="tag">${d}</span>`).join('');
+  el.innerHTML = `<div class="card">
+    <div class="card-header">
+      <div class="step-badge"><i class="ti ${s.icon}" style="font-size:14px"></i></div>
+      <h2>Step ${current + 1}: ${s.title}</h2>
+    </div>
+    <p>${s.desc}</p>
+    ${s.deliverables.length ? `<div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:5px;font-weight:500;letter-spacing:.3px">DELIVERABLES</div><div class="deliverables">${tags}</div>` : ''}
+    ${s.duration ? `<div class="timeline-row"><i class="ti ti-clock" style="font-size:13px"></i> <span>Typical timeline: <strong>${s.duration}</strong></span></div>` : ''}
+  </div>`;
+}
+
+function renderQuickBtns() {
+  const s = steps[current];
+  const el = document.getElementById('quick-btns');
+  el.innerHTML = s.questions.map(q => `<button class="quick-btn" onclick="askQuestion('${q.replace(/'/g,"\\'")}')">💬 ${q}</button>`).join('');
+}
+
+function renderNav() {
+  document.getElementById('prev-btn').disabled = current === 0;
+  document.getElementById('next-btn').innerHTML = current === steps.length - 2 ? 'Get in touch <i class="ti ti-arrow-right"></i>' : 'Next <i class="ti ti-arrow-right"></i>';
+  document.getElementById('next-btn').disabled = false;
+  if (current === steps.length - 1) {
+    document.getElementById('next-btn').disabled = true;
+    document.getElementById('next-btn').innerHTML = 'Done';
+  }
+}
+
+function render() {
+  renderTrack();
+  renderCard();
+  renderQuickBtns();
+  renderNav();
+  if (chatHistory.length === 0) addWelcomeMsg();
+}
+
+function changeStep(dir) {
+  current = Math.max(0, Math.min(steps.length - 1, current + dir));
+  render();
+  document.getElementById('app').scrollIntoView({ behavior: 'smooth' });
+}
+
+function addWelcomeMsg() {
+  const s = steps[current];
+  if (current < steps.length - 1) {
+    addMsg('ai', `Hi! I'm Fabtech's project guide. You're viewing <strong>Step ${current + 1}: ${s.title}</strong>. Ask me anything about this phase — timelines, what to expect, technical details, or regulatory requirements.`);
+  }
+}
+
+function addMsg(role, text) {
+  const el = document.createElement('div');
+  el.className = 'msg ' + role;
+  el.innerHTML = text;
+  document.getElementById('messages').appendChild(el);
+  document.getElementById('messages').scrollTop = 9999;
+  return el;
+}
+
+function askQuestion(q) {
+  document.getElementById('chat-input').value = q;
+  sendMsg();
+}
+
+async function sendMsg() {
+  const inp = document.getElementById('chat-input');
+  const q = inp.value.trim();
+  if (!q) return;
+  inp.value = '';
+  addMsg('user', q);
+  const typing = addMsg('ai typing', 'Typing…');
+  const s = steps[current];
+  const systemPrompt = `You are an expert Fabtech Technologies project consultant. Fabtech is a global pharma engineering company based in Mumbai that delivers turnkey cleanroom and pharma plant projects in 53+ countries. The client is currently viewing Step ${current + 1}: "${s.title}" of the project journey.\n\nContext for this step:\n${s.desc}\n\nDeliverables: ${s.deliverables.join(', ')}\nTimeline: ${s.duration}\n\nAnswer the client's question clearly, concisely, and reassuringly. Use 2-3 sentences max. Be specific to Fabtech's process. Do not use markdown headers or bullet lists — respond in plain, friendly prose.`;
+  chatHistory.push({ role: 'user', content: q });
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: systemPrompt,
+        messages: chatHistory.slice(-6)
+      })
+    });
+    const data = await res.json();
+    const reply = data.content?.map(c => c.text || '').join('') || 'I couldn\'t get a response. Please try again.';
+    chatHistory.push({ role: 'assistant', content: reply });
+    typing.remove();
+    addMsg('ai', reply);
+  } catch (e) {
+    typing.remove();
+    addMsg('ai', 'Something went wrong. Please try again.');
+  }
+}
+
+function submitLead() {
+  const name = document.getElementById('lname').value.trim();
+  const email = document.getElementById('lemail').value.trim();
+  if (!name || !email) { alert('Please enter your name and email.'); return; }
+  document.getElementById('lead-form').innerHTML = `<div class="success-msg"><i class="ti ti-circle-check" style="font-size:32px;display:block;margin-bottom:8px"></i>Thank you, ${name}!<br><span style="font-size:13px;color:var(--color-text-secondary)">A Fabtech expert will reach out to you at <strong>${email}</strong> within 24 hours.</span></div>`;
+}
+
+render();
+</script>
